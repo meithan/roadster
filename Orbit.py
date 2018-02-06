@@ -94,12 +94,15 @@ class Orbit:
     self.vpe = self.vel_at_radius(self.rpe)
     self.vap = self.vel_at_radius(self.rap)
 
+  # Returns the "standard" set of orbital elements
   def get_elements(self):
     return {"a": self.a, "e": self.e, "i": self.i, "arg": self.w, "LAN": self.LAN, "M0": self.M0, "long_peri": self.long_peri, "L0": self.L0}
 
+  # Sets the axes to plot to
   def set_axes(self, ax):
     self.ax = ax
 
+  # Sets the projection for plots, either "2D" or "3D"
   def set_proj(self, proj):
     self.proj = proj
 
@@ -199,57 +202,9 @@ class Orbit:
 
     return E
 
-  # Solves Kepler's equation, M = E - ecc*sin(E), for the
-  # eccentric anomaly E, given M and ecc; if ecc > 0, solves the
-  # hyperbolic Kepler equation instead, M = ecc*sinh(H) - H, for H.
-  def solveKepler2(self, M, ecc):
-
-    # Tolerance (absolute)
-    tol = 1e-5
-    max_iter = 1000
-
-    if (M == 0):
-      return 0
-
-    while M > pi: M -= 2*pi
-    while M < pi: M += 2*pi
-
-    if ecc > 0.9:
-      E = pi if M < 2*pi else -pi
-    else:
-      E = M
-
-    rel_err = tol*2.0
-    iter = 1
-    while (rel_err > tol):
-      if (ecc < 1):
-        Enew = E - (E-ecc*sin(E)-M)/(1.0-ecc*cos(E))
-      else:
-        Enew = E - (ecc*sinh(E)-E-M)/(ecc*cosh(E)-1.0)
-      if (E != 0): rel_err = abs((Enew-E)/E)
-      iter += 1
-      if iter > max_iter:
-        print("\nsolveKepler solver reached max iterations!")
-        print("M=", M)
-        print("ecc=", ecc)
-        print("current E=", Enew)
-        print("last E=", E)
-        raise Exception("Kepler solver reached max iterations!")
-      E = Enew
-
-    return E
-
   # Applies the coordinate transform from perifocal coordinates to
   # the final reference frame coordinates (e.g. ecliptic)
   def transform(self, x, y, z):
-    # x1, y1 = rotate2D(x, y, self.w+self.LAN)
-    # z1 = z
-    # nx, ny = rotate2D(1, 0, self.LAN)
-    # x2, y2, z2 = rotate3D(x1, y1, z1, self.i, nx, ny, 0)
-    # return x2, y2, z2
-    # x, y, z = rotate3D(x, y, z, -self.w, 0, 0, 1)
-    # x, y, z = rotate3D(x, y, z, -self.i, 1, 0, 0)
-    # x, y, z = rotate3D(x, y, z, -self.LAN, 0, 0, 1)
     x, y, z = Rz(x, y, z, self.w)
     x, y, z = Rx(x, y, z, self.i)
     x, y, z = Rz(x, y, z, self.LAN)
@@ -257,6 +212,8 @@ class Orbit:
 
   # Plots the position of the body at the given time
   # The time must be in seconds, relative to the epoch
+  # The arguments can optionally be used to override the defaults (and will
+  # be remembered for subsequent calls)
   def plot_at_time(self, time, proj=None, ax=None, color=None, units=None):
 
     if ax is not None:
@@ -285,7 +242,10 @@ class Orbit:
       self.ax.scatter([x],[y], s=10, color=self.color, zorder=10)
 
   # Plots the orbit
-  # Can optionally provide the axes
+  # The arguments proj, ax, color and units can optionally be used to
+  # override the defaults (and will be remembered for subsequent calls)
+  # The arguments show_apsides, show_nodes, show_axes and show_primary
+  # can be set to True to add these elements to the orbit's plot
   def plot(self, proj=None, ax=None, show_apsides=False, show_nodes=False, show_axes=False, show_primary=False, color=None, units=None):
 
     if ax is not None:
@@ -385,3 +345,5 @@ class Orbit:
       # Coordinate axes
       self.ax.plot([0,self.a/self.units], [0,0], "g")
       self.ax.plot([0,0], [0,self.a/self.units], "r")
+      if proj == "3D":
+        self.ax.plot([0,0], [0,0], [0,self.a/self.units], "b")
