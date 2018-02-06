@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # Celestial bodies of the solar system
 from CelestialBody import CelestialBody
 from Orbit import Orbit
