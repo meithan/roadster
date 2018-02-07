@@ -20,9 +20,6 @@ Roadster = CelestialBody("Roadster")
 Roadster.orbit = Orbit(primary=Sun)
 Roadster.orbit.from_statevectors(pos, vel, launch_date, J2000)
 
-print(Roadster.orbit.P/86400/365.24)
-sys.exit()
-
 belt_min = 2.06
 belt_max = 3.27
 numpts = 200
