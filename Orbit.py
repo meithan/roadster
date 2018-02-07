@@ -1,6 +1,7 @@
 # A class to represent general 3D orbits, with the ability to plot them
 # (using matplotlib) or compute position and/or velocity at arbitrary
 # times
+from datetime import datetime, timedelta
 from math import pi, sin, cos, tan, atan, acos
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
@@ -15,8 +16,25 @@ class Orbit:
   # contain the elements in the form specified by from_elements()
   def __init__(self, primary, elements=None):
 
-    self.primary = primary
+    self.a = None
+    self.e = None
+    self.i = None
+    self.w = None
+    self.LAN = None
+    self.M0 = None
+    self.t0 = None
+    self.long_peri = None
+    self.L0 = None
+    self.b = None
+    self.c = None
+    self.P = None
+    self.n = None
+    self.rpe = None
+    self.rap = None
+    self.vpe = None
+    self.vap = None
 
+    self.primary = primary
     if elements is not None:
       self.from_elements(*elements)
 
@@ -32,8 +50,8 @@ class Orbit:
   #  arg: argument of periapsis (degrees)
   #  LAN: longitude of the ascending node (degrees)
   #  M0: mean anomaly at epoch (degrees)
-  # The epoch t0 can also be provided; it is assumed zero otherwise
-  def from_elements(self, a, e, i, arg, LAN, M0, t0=0):
+  #  t0: UTC epoch of the elements, as a tz-naive datetime object
+  def from_elements(self, a, e, i, arg, LAN, M0, t0):
     self.a = a
     self.e = e
     self.i = i
@@ -44,13 +62,15 @@ class Orbit:
     self.set_derived_params()
 
   # Defines the orbit from the 3D state vectors
-  # The position and velocity vectors must be in m and m/s, respectively
-  # time is the time since epoch at which the state vectors are given, in
-  # seconds
-  # t0 is the epoch (optional; defaults to t), in seconds
+  #  pos: 3D cartesian position vector, in m
+  #  vel: 3D cartesian velocity vector, in m/s
+  #  time: UTC time as which the state is given, tz-naive datetime object
+  #  t0: (optional) UTC epoch for the elements, tz-naive datetime object
+  # If t0 is not set, the orbit's epoch will be time. If t0 is given, the
+  # mean anomaly at epoch will be adjusted to t0.
   def from_statevectors(self, pos, vel, time, t0=None):
 
-    if t0 is None: t0 = t
+    if t0 is None: t0 = time
 
     pos = np.array(pos)
     vel = np.array(vel)
@@ -72,7 +92,7 @@ class Orbit:
       w = 2*pi - w
     M = E - e*sin(E)
     a = 1/(2/np.linalg.norm(pos) - np.linalg.norm(vel)**2/self.primary.mu)
-    M0 = M - sqrt(self.primary.mu/a**3)*time
+    M0 = M - sqrt(self.primary.mu/a**3)*self.secs_since_epoch(time)
 
     i = clamp_degs(to_degs(i))
     w = clamp_degs(to_degs(w))
@@ -80,6 +100,34 @@ class Orbit:
     M0 = clamp_degs(to_degs(M0))
 
     self.from_elements(a, e, i, w, LAN, M0, t0=t0)
+
+  # Defines the orbit from a two-line element set
+  # The argument TLE must be either a string with two newline characters
+  # demarking the title and two data lines of the TLE, or a 3-tuple with
+  # these elements
+  def from_TLE(self, TLE):
+
+    if isinstance(TLE, str):
+      TLE = TLE.split("\n")
+    assert len(TLE) == 3
+
+    epoch_year = int(TLE[1][18:20])
+    if epoch_year < 57: epoch_year += 2000
+    else: epoch_year + 1900
+    epoch_day = float(TLE[1][20:32])
+
+    epoch = datetime(epoch_year, 1, 1) + timedelta(days=epoch_day-1)
+    inc = float(TLE[2][8:16])
+    RAAN = float(TLE[2][17:25])
+    ecc = float("0."+TLE[2][26:33])
+    w = float(TLE[2][34:42])
+    M0 = float(TLE[2][43:51])
+    motion = float(TLE[2][52:63])   # in revolutions per day
+
+    P = 86400/motion
+    a = (self.primary.mu*(P/(2*pi))**2)**(1.0/3)
+
+    self.from_elements(a, ecc, inc, w, RAAN, M0, epoch)
 
   # Sets derived orbital parameters from main elements
   def set_derived_params(self):
@@ -94,17 +142,19 @@ class Orbit:
     self.vpe = self.vel_at_radius(self.rpe)
     self.vap = self.vel_at_radius(self.rap)
 
-  # Returns the "standard" set of orbital elements
   def get_elements(self):
-    return {"a": self.a, "e": self.e, "i": self.i, "arg": self.w, "LAN": self.LAN, "M0": self.M0, "long_peri": self.long_peri, "L0": self.L0}
+    return {"a": self.a, "e": self.e, "i": self.i, "arg": self.w, "LAN": self.LAN, "M0": self.M0, "long_peri": self.long_peri, "L0": self.L0, "epoch": self.t0}
 
-  # Sets the axes to plot to
   def set_axes(self, ax):
     self.ax = ax
 
-  # Sets the projection for plots, either "2D" or "3D"
   def set_proj(self, proj):
     self.proj = proj
+
+  # Returns the (fractional) number of seconds since the epoch
+  # Negative it before epoch
+  def secs_since_epoch(self, time):
+    return (time - self.t0).total_seconds()
 
   # Speed at given radius (i.e. vis-viva equation)
   def vel_at_radius(self, radius):
@@ -116,13 +166,13 @@ class Orbit:
     return self.a*(1-self.e**2)/(1+self.e*cos(utils.to_rads(nu)))
 
   # Mean anomaly M at provided time
-  # Time must be in seconds, relative to the epoch
+  # Time must be a UTC tz-naive datetime object
   def M_at_time(self, time):
-    return self.n*(time) + utils.to_rads(self.M0)
+    return self.n*self.secs_since_epoch(time) + utils.to_rads(self.M0)
 
   # Returns the position and velocity vectors (in the orbital
   # frame) at arbitrary time (same clock as epoch)
-  # The time must be in seconds, relative to the epoch
+  # Time must be a UTC tz-naive datetime object
   def posvel_at_time(self, time):
 
     # Get mean anomaly at specified time
@@ -205,15 +255,21 @@ class Orbit:
   # Applies the coordinate transform from perifocal coordinates to
   # the final reference frame coordinates (e.g. ecliptic)
   def transform(self, x, y, z):
+    # x1, y1 = rotate2D(x, y, self.w+self.LAN)
+    # z1 = z
+    # nx, ny = rotate2D(1, 0, self.LAN)
+    # x2, y2, z2 = rotate3D(x1, y1, z1, self.i, nx, ny, 0)
+    # return x2, y2, z2
+    # x, y, z = rotate3D(x, y, z, -self.w, 0, 0, 1)
+    # x, y, z = rotate3D(x, y, z, -self.i, 1, 0, 0)
+    # x, y, z = rotate3D(x, y, z, -self.LAN, 0, 0, 1)
     x, y, z = Rz(x, y, z, self.w)
     x, y, z = Rx(x, y, z, self.i)
     x, y, z = Rz(x, y, z, self.LAN)
     return x, y, z
 
   # Plots the position of the body at the given time
-  # The time must be in seconds, relative to the epoch
-  # The arguments can optionally be used to override the defaults (and will
-  # be remembered for subsequent calls)
+  # Time must be a UTC tz-naive datetime object
   def plot_at_time(self, time, proj=None, ax=None, color=None, units=None):
 
     if ax is not None:
@@ -242,10 +298,7 @@ class Orbit:
       self.ax.scatter([x],[y], s=10, color=self.color, zorder=10)
 
   # Plots the orbit
-  # The arguments proj, ax, color and units can optionally be used to
-  # override the defaults (and will be remembered for subsequent calls)
-  # The arguments show_apsides, show_nodes, show_axes and show_primary
-  # can be set to True to add these elements to the orbit's plot
+  # Can optionally provide the axes
   def plot(self, proj=None, ax=None, show_apsides=False, show_nodes=False, show_axes=False, show_primary=False, color=None, units=None):
 
     if ax is not None:
@@ -275,8 +328,8 @@ class Orbit:
       self.ax.set_aspect('equal')
 
     # Plot orbit
-    if proj == "3D": self.ax.plot(xs, ys, zs, color=self.color, lw=1.0)
-    elif proj == "2D": self.ax.plot(xs, ys, color=self.color, lw=1.0)
+    if self.proj == "3D": self.ax.plot(xs, ys, zs, color=self.color, lw=1.0)
+    elif self.proj == "2D": self.ax.plot(xs, ys, color=self.color, lw=1.0)
 
     scale = self.rap*1.2 / self.units
     self.ax.set_xlim(-scale, scale)
@@ -287,7 +340,7 @@ class Orbit:
     if show_primary:
 
       # Primary as a circle/sphere
-      R = self.primary.radius/1e3
+      R = self.primary.radius/self.units
       if self.proj == "3D":
         u = np.linspace(0, 2 * np.pi, 20)
         v = np.linspace(0, np.pi, 15)
@@ -343,7 +396,7 @@ class Orbit:
     if show_axes:
 
       # Coordinate axes
-      self.ax.plot([0,self.a/self.units], [0,0], "g")
-      self.ax.plot([0,0], [0,self.a/self.units], "r")
-      if proj == "3D":
+      self.ax.plot([0,self.a/self.units], [0,0], "r")
+      self.ax.plot([0,0], [0,self.a/self.units], "g")
+      if self.proj == "3D":
         self.ax.plot([0,0], [0,0], [0,self.a/self.units], "b")
