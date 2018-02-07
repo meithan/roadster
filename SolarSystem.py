@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # Celestial bodies of the solar system
 from CelestialBody import CelestialBody
 from Orbit import Orbit
@@ -41,6 +40,9 @@ for name,a,e,i,LAN,long_peri,L0 in elements:
 
   ss_planets[name] = planet
 
+ss_planets["Earth"].mu = 3.986004418e14
+ss_planets["Earth"].radius = 6370.0e3
+
 Mercury = ss_planets["Mercury"]
 Venus = ss_planets["Venus"]
 Earth = ss_planets["Earth"]
@@ -61,12 +63,11 @@ if __name__ == "__main__":
   plt.style.use('dark_background')
   from datetime import datetime
 
-  now = datetime.utcnow()
-  # now = datetime(2018,1,1)
-  time = (now - J2000).total_seconds()
+  time = datetime.utcnow()
+  # time = datetime(2018,1,1)
 
-  proj = "2D"   # "3D" or "2D"
-  plot_all = False   # If False, plots only the inner planets
+  proj = "3D"   # "3D" or "2D"
+  inner_only = True   # If True, plots only the inner planets
 
   fig = plt.figure(figsize=(6,6))
   if proj == "3D":
@@ -77,21 +78,21 @@ if __name__ == "__main__":
 
   Mercury.plot_orbit(ax=ax, proj=proj, color="darkgray", show_axes=True, units=AU)
   Mercury.plot_at_time(time)
-  Venus.plot_orbit(ax=ax, proj=proj, color="sandybrown", units=AU)
+  Venus.plot_orbit(ax=ax, proj=proj, color="peru", units=AU)
   Venus.plot_at_time(time)
-  Earth.plot_orbit(ax=ax, proj=proj, color="steelblue", units=AU)
+  Earth.plot_orbit(ax=ax, proj=proj, color="darkcyan", units=AU)
   Earth.plot_at_time(time)
   Mars.plot_orbit(ax=ax, proj=proj, color="firebrick", units=AU)
   Mars.plot_at_time(time)
 
-  if plot_all:
-    Jupiter.plot_orbit(ax=ax, proj=proj, color="brown", units=AU)
+  if not inner_only:
+    Jupiter.plot_orbit(ax=ax, proj=proj, color="chocolate", units=AU)
     Jupiter.plot_at_time(time)
-    Saturn.plot_orbit(ax=ax, proj=proj, color="orange", units=AU)
+    Saturn.plot_orbit(ax=ax, proj=proj, color="darksalmon", units=AU)
     Saturn.plot_at_time(time)
-    Uranus.plot_orbit(ax=ax, proj=proj, color="navy", units=AU)
+    Uranus.plot_orbit(ax=ax, proj=proj, color="steelblue", units=AU)
     Uranus.plot_at_time(time)
-    Neptune.plot_orbit(ax=ax, proj=proj, color="darkcyan", units=AU)
+    Neptune.plot_orbit(ax=ax, proj=proj, color="royalblue", units=AU)
     Neptune.plot_at_time(time)
     Pluto.plot_orbit(ax=ax, proj=proj, color="gray", units=AU)
     Pluto.plot_at_time(time)
@@ -102,18 +103,13 @@ if __name__ == "__main__":
   #   planet = ss_planets[name]
   #   print("%s %.3f x %.3f AU, %.1f°" % (name.ljust(8), planet.orbit.rpe/AU, planet.orbit.rap/AU, planet.orbit.i))
 
-  from math import sqrt
-  from utils import AU, J2000
-  x, y, z, vx, vy, vz = Earth.posvel_at_time(time)
-  print(x/AU, y/AU, z/AU, sqrt(x**2+y**2+z**2)/AU)
-  print(vx/1e3, vy/1e3, vz/1e3, sqrt(vx**2+vy**2+vz**2)/1e3)
-  o = Orbit(Sun)
-  o.from_statevectors((x,y,z),(vx,vy,vz),time,J2000)
-  print(Earth.get_elements())
-  print(o.get_elements())
-
   if proj == "2D":
     plt.text(0.97, 0.95, now.strftime("%Y-%m-%d"), transform=ax.transAxes, ha="right")
+
+  ax.w_xaxis.set_pane_color((0.0, 0.0, 0.0, 0.0))
+  ax.w_yaxis.set_pane_color((0.0, 0.0, 0.0, 0.0))
+  ax.w_zaxis.set_pane_color((0.0, 0.0, 0.0, 0.0))
+  ax.grid(False)
 
   plt.subplots_adjust(top=0.99, bottom=0.05, left=0.075, right=0.975, hspace=0.2, wspace=0.2)
 
