@@ -71,6 +71,7 @@ class Orbit:
   def from_statevectors(self, pos, vel, time, t0=None):
 
     if t0 is None: t0 = time
+    self.t0 = t0
 
     pos = np.array(pos)
     vel = np.array(vel)
@@ -352,13 +353,13 @@ class Orbit:
         import matplotlib.patches as mpatches
         circle = mpatches.Circle((0,0), R, fill=True, color="gray")
 
-    else:
-
-      # Just at mark at the center of gravity
-      if self.proj == "3D":
-        self.ax.plot([0], [0], [0], "x", color="gray")
-      elif self.proj == "2D":
-        self.ax.plot([0], [0], "x", color="gray")
+    # else:
+    #
+    #   # Just at mark at the center of gravity
+    #   if self.proj == "3D":
+    #     self.ax.plot([0], [0], [0], "x", color="gray")
+    #   elif self.proj == "2D":
+    #     self.ax.plot([0], [0], "x", color="gray")
 
     if show_apsides:
 
