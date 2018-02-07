@@ -3,7 +3,7 @@ Code to make an animation of the orbit of the Roadster to be launched by the Fal
 
 https://www.youtube.com/watch?v=w7BmM1nn3q8
 
-Requires the Python plotting library [matplotlib](https://matplotlib.org/users/installing.html) (and numpy, which should come with matplotlib).
+Requires the Python plotting library [matplotlib](https://www.youtube.com/watch?v=i8XDwt-67vY) (and numpy, which should come with matplotlib).
 
 To make the animation:
 

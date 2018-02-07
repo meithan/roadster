@@ -30,7 +30,6 @@ outer_xs = belt_max*np.cos(theta)
 outer_ys = belt_max*np.sin(theta)
 outer_xs[:] = outer_xs[::-1]
 outer_ys[:] = outer_ys[::-1]
-print(inner_xs.shape, outer_xs.shape)
 xs = np.concatenate((inner_xs, outer_xs))
 ys = np.concatenate((inner_ys, outer_ys))
 
