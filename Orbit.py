@@ -22,7 +22,7 @@ class Orbit:
     self.w = None
     self.LAN = None
     self.M0 = None
-    self.t0 = None
+    self.epoch = None
     self.long_peri = None
     self.L0 = None
     self.b = None
@@ -49,29 +49,34 @@ class Orbit:
   #  i: inclination (degrees)
   #  arg: argument of periapsis (degrees)
   #  LAN: longitude of the ascending node (degrees)
-  #  M0: mean anomaly at epoch (degrees)
-  #  t0: UTC epoch of the elements, as a tz-naive datetime object
-  def from_elements(self, a, e, i, arg, LAN, M0, t0):
+  #  M: mean anomaly at given time (degrees)
+  #  time: UTC time as which the elements are given (tz-naive datetime object)
+  #  epoch: (optional) UTC epoch for the elements (tz-naive datetime object)
+  # If epoch is not given, the orbit's epoch will be set to time.
+  # If epoch is given, the mean anomaly at epoch will be adjusted to epoch.
+  def from_elements(self, a, e, i, arg, LAN, M, time, epoch=None):
+    if epoch is None: epoch = time
+    self.epoch = epoch
     self.a = a
     self.e = e
     self.i = i
     self.w = arg
     self.LAN = LAN
-    self.M0 = M0
-    self.t0 = t0
+    self.M0 = M - sqrt(self.primary.mu/a**3)*self.secs_since_epoch(time)
+    self.epoch = epoch
     self.set_derived_params()
 
   # Defines the orbit from the 3D state vectors
   #  pos: 3D cartesian position vector, in m
   #  vel: 3D cartesian velocity vector, in m/s
   #  time: UTC time as which the state is given, tz-naive datetime object
-  #  t0: (optional) UTC epoch for the elements, tz-naive datetime object
-  # If t0 is not set, the orbit's epoch will be time. If t0 is given, the
-  # mean anomaly at epoch will be adjusted to t0.
-  def from_statevectors(self, pos, vel, time, t0=None):
+  #  epoch: (optional) UTC epoch for the elements, tz-naive datetime object
+  # If epoch is not set, the orbit's epoch will be time. If epoch is given, the
+  # mean anomaly at epoch will be adjusted to epoch.
+  def from_statevectors(self, pos, vel, time, epoch=None):
 
-    if t0 is None: t0 = time
-    self.t0 = t0
+    if epoch is None: epoch = time
+    self.epoch = epoch
 
     pos = np.array(pos)
     vel = np.array(vel)
@@ -100,7 +105,7 @@ class Orbit:
     LAN = clamp_degs(to_degs(LAN))
     M0 = clamp_degs(to_degs(M0))
 
-    self.from_elements(a, e, i, w, LAN, M0, t0=t0)
+    self.from_elements(a, e, i, w, LAN, M0, epoch=epoch)
 
   # Defines the orbit from a two-line element set
   # The argument TLE must be either a string with two newline characters
@@ -144,7 +149,7 @@ class Orbit:
     self.vap = self.vel_at_radius(self.rap)
 
   def get_elements(self):
-    return {"a": self.a, "e": self.e, "i": self.i, "arg": self.w, "LAN": self.LAN, "M0": self.M0, "long_peri": self.long_peri, "L0": self.L0, "epoch": self.t0}
+    return {"a": self.a, "e": self.e, "i": self.i, "arg": self.w, "LAN": self.LAN, "M0": self.M0, "long_peri": self.long_peri, "L0": self.L0, "epoch": self.epoch}
 
   def set_axes(self, ax):
     self.ax = ax
@@ -155,7 +160,7 @@ class Orbit:
   # Returns the (fractional) number of seconds since the epoch
   # Negative it before epoch
   def secs_since_epoch(self, time):
-    return (time - self.t0).total_seconds()
+    return (time - self.epoch).total_seconds()
 
   # Speed at given radius (i.e. vis-viva equation)
   def vel_at_radius(self, radius):
@@ -296,11 +301,11 @@ class Orbit:
     if self.proj == "3D":
       self.ax.scatter([x],[y],[z], color=self.color, zorder=10)
     elif self.proj == "2D":
-      self.ax.scatter([x],[y], s=10, color=self.color, zorder=10)
+      self.ax.scatter([x],[y], s=30, color=self.color, zorder=10)
 
   # Plots the orbit
   # Can optionally provide the axes
-  def plot(self, proj=None, ax=None, show_apsides=False, show_nodes=False, show_axes=False, show_primary=False, color=None, units=None):
+  def plot(self, proj=None, ax=None, show_apsides=False, show_nodes=False, show_axes=False, show_primary=False, color=None, units=None, lw=None):
 
     if ax is not None:
       self.ax = ax
@@ -329,8 +334,10 @@ class Orbit:
       self.ax.set_aspect('equal')
 
     # Plot orbit
-    if self.proj == "3D": self.ax.plot(xs, ys, zs, color=self.color, lw=1.0)
-    elif self.proj == "2D": self.ax.plot(xs, ys, color=self.color, lw=1.0)
+    if self.proj == "3D":
+      self.ax.plot(xs, ys, zs, color=self.color, lw=lw)
+    elif self.proj == "2D":
+      self.ax.plot(xs, ys, color=self.color, lw=lw)
 
     scale = self.rap*1.2 / self.units
     self.ax.set_xlim(-scale, scale)

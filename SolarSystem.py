@@ -36,7 +36,7 @@ for name,a,e,i,LAN,long_peri,L0 in elements:
   planet.orbit = Orbit(primary=Sun)
   arg_peri = long_peri - LAN
   M0 = L0 - long_peri
-  planet.orbit.from_elements(a=a*AU, e=e, i=i, arg=arg_peri, LAN=LAN, M0=M0, t0=J2000)
+  planet.orbit.from_elements(a=a*AU, e=e, i=i, arg=arg_peri, LAN=LAN, M=M0, time=J2000)
 
   ss_planets[name] = planet
 

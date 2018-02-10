@@ -21,10 +21,10 @@ class CelestialBody:
       self.color = color
     return self.orbit.plot_at_time(time, ax=ax, color=self.color, proj=proj, units=units)
 
-  def plot_orbit(self, proj=None, ax=None, show_apsides=False, show_nodes=False, show_axes=False, show_primary=False, color=None, units=None):
+  def plot_orbit(self, proj=None, ax=None, show_apsides=False, show_nodes=False, show_axes=False, show_primary=False, color=None, units=None, lw=None):
     if color is not None:
       self.color = color
-    return self.orbit.plot(proj=proj, ax=ax, show_apsides=show_apsides, show_nodes=show_nodes, show_axes=show_axes, show_primary=show_primary, color=self.color, units=units)
+    self.orbit.plot(proj=proj, ax=ax, show_apsides=show_apsides, show_nodes=show_nodes, show_axes=show_axes, show_primary=show_primary, color=self.color, units=units, lw=lw)
 
   def posvel_at_time(self, time):
     return self.orbit.posvel_at_time(time)
