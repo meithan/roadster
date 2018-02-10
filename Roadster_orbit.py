@@ -59,10 +59,6 @@ elset_time = datetime(2018, 5, 1)
 Roadster = CelestialBody("Roadster")
 Roadster.orbit = Orbit(primary=Sun, elements=(A*AU, EC, IN, W, OM, MA, elset_time))
 Roadster_elems = Roadster.get_elements()
-print(Roadster.get_elements())
-print(Roadster.orbit.M_at_time(diagram_date))
-
-print(Earth.get_elements())
 
 # Create figure
 plt.style.use('dark_background')
@@ -110,17 +106,17 @@ plt.annotate("Earth", xy=(Earth_x/AU, Earth_y/AU), xytext=(35, -6), textcoords="
 
 plt.annotate("Mars", xy=(Mars_x/AU, Mars_y/AU), xytext=(-30, -6), textcoords="offset pixels", bbox=bbox, color=Mars_color, ha="center", fontsize=12)
 
-plt.annotate("Roadster\norbit", xy=(-1.08, -0.26), xytext=(-35, 20), textcoords="offset pixels", bbox=bbox, ha="center", fontsize=10, arrowprops=dict(arrowstyle="-", connectionstyle="arc3", color=Roadster_color), color=Roadster_color)
-
 plt.annotate("Launch\n%s" % launch_date.strftime("%b %d, %Y"), xy=(Earth_x/AU, Earth_y/AU), xytext=(-65,0), textcoords="offset pixels", bbox=bbox, color=Roadster_color, ha="center", fontsize=12)
 
-plt.annotate("Mars orbit crossing\n%s" % crossing1_date.strftime("%b %d, %Y"), xy=(-0.25, -1.48), xytext=(-10,-50), textcoords="offset pixels", ha="center", fontsize=10, arrowprops=dict(arrowstyle="-", connectionstyle="arc3"))
+plt.annotate("Roadster\norbit", xy=(-1.08, -0.26), xytext=(-35, 20), textcoords="offset pixels", bbox=bbox, ha="center", fontsize=10, arrowprops=dict(arrowstyle="-", connectionstyle="arc3", color=Roadster_color), color=Roadster_color)
 
-plt.annotate("Aphelion %.2f AU\n%s" % (aphelion_dist, aphelion_date.strftime("%b %d, %Y")), xy=(1.35, -1.0), xytext=(20,-70), textcoords="offset pixels", ha="center", fontsize=10, arrowprops=dict(arrowstyle="-", connectionstyle="arc3"))
+plt.annotate("Mars orbit crossing\n%s" % crossing1_date.strftime("%b %d, %Y"), xy=(-0.20, -1.49), xytext=(-10,-50), textcoords="offset pixels", ha="center", fontsize=10, arrowprops=dict(arrowstyle="-", connectionstyle="arc3"))
 
-plt.annotate("Mars orbit crossing\n%s" % crossing2_date.strftime("%b %d, %Y"), xy=(1.35, 0.48), xytext=(15,80), textcoords="offset pixels", ha="center", fontsize=10, arrowprops=dict(arrowstyle="-", connectionstyle="arc3"))
+plt.annotate("Mars orbit crossing\n%s" % crossing2_date.strftime("%b %d, %Y"), xy=(1.36, 0.41), xytext=(15,80), textcoords="offset pixels", ha="center", fontsize=10, arrowprops=dict(arrowstyle="-", connectionstyle="arc3"))
 
-plt.annotate("Perihelion %.2f AU\n%s" % (perihelion_dist, perihelion_date.strftime("%b %d, %Y")), xy=(-0.71, 0.70), xytext=(30,50), textcoords="offset pixels", ha="center", fontsize=10, arrowprops=dict(arrowstyle="-", connectionstyle="arc3"))
+plt.annotate("Aphelion %.2f AU\n%s" % (aphelion_dist, aphelion_date.strftime("%b %d, %Y")), xy=(1.23, -1.16), xytext=(20,-70), textcoords="offset pixels", ha="center", fontsize=10, arrowprops=dict(arrowstyle="-", connectionstyle="arc3"))
+
+plt.annotate("Perihelion %.2f AU\n%s" % (perihelion_dist, perihelion_date.strftime("%b %d, %Y")), xy=(-0.70, 0.71), xytext=(30,50), textcoords="offset pixels", ha="center", fontsize=10, arrowprops=dict(arrowstyle="-", connectionstyle="arc3"))
 
 plt.text(1.8, 0, "♈", ha="center", fontsize=14, color="gray")
 plt.annotate("", xy=(1.93, -0.05), xytext=(-30,0), textcoords="offset pixels", arrowprops=dict(arrowstyle="->", connectionstyle="arc3", color="gray"))
@@ -129,7 +125,7 @@ s = "JPL Horizons elements (%s)\na=%.3f AU, e=%.3f, i=%.2f°, ω=%.1f°, Ω=%.1f
 plt.text(0, 1.73, s, ha="center", color="gray", fontsize=10)
 
 # Copyright notice -- remove for Wikipedia use
-#plt.text(-1.95, -1.95, "Meithan West | CC-BY-SA", ha="left", fontsize=8, color="0.2")
+plt.text(-1.95, -1.95, "Meithan West | CC-BY-SA", ha="left", fontsize=8, color="0.2")
 
 # Plot settings
 plt.xlim(-2,2)
@@ -145,6 +141,6 @@ plt.subplots_adjust(top=0.99, bottom=0.05, left=0.110, right=0.975, hspace=0.2, 
 # Save figure
 plt.savefig(fname)
 print("Saved %s" % fname)
-#plt.show()
+plt.show()
 
 plt.close()
