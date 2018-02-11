@@ -24,6 +24,7 @@ def read_JPL_data(fname):
       Y = float(line[30:52])
       Z = float(line[56:78])
       data.append((date,(X/1e6,Y/1e6,Z/1e6),sqrt(X**2+Y**2+Z**2)/1e6))
+      line = f.readline()
   return zip(*data)
 
 dates, Roadster_pos, Roadster_helio = read_JPL_data("horizons_Roadster.txt")
