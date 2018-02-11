@@ -34,7 +34,7 @@ Mars_P = 687
 Roadster_P = 557
 
 # Directory to output movie frames
-frames_dir = "/home/meithan/Desktop/roadster_movie/"
+frames_dir = "frames/"
 
 # Colors
 Mercury_color = "gray"
@@ -209,7 +209,7 @@ while i < len(dates):
     plt.annotate("Perihelion, 0.99 AU\n%s" % date.strftime("%b %d, %Y"), xy=(Rx, Ry), xytext=(10,80), textcoords="offset pixels", fontsize=fontsize, bbox=bbox, ha="center", arrowprops=dict(arrowstyle="-", connectionstyle="arc3"))
   elif date == closest_Mars_approach:
     plt.annotate("Closest Mars approach\n7.4 million km\n%s" % date.strftime("%b %d, %Y"), xy=(Mx, My), xytext=(10,80), textcoords="offset pixels", fontsize=fontsize, bbox=bbox, ha="center", arrowprops=dict(arrowstyle="-", connectionstyle="arc3"))
-  elif date == closests_Earth_approach:
+  elif date == closest_Earth_approach:
     plt.annotate("Closest Earth approach\n41.1 million km\n%s" % date.strftime("%b %d, %Y"), xy=(Ex, Ey), xytext=(40,120), textcoords="offset pixels", fontsize=fontsize, bbox=bbox, ha="center", arrowprops=dict(arrowstyle="-", connectionstyle="arc3"))
 
 
