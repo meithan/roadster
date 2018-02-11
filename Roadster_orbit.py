@@ -14,18 +14,18 @@ fname = "Roadster_orbit.png"
 
 # Dates
 # Crossing dates are approximate
-launch_date = datetime(2018,2,6)
-crossing1_date = datetime(2018,7,8)
-crossing2_date = datetime(2019,4,16)
+launch_date = datetime(2018, 2, 6)
+crossing1_date = datetime(2018, 7, 12)
+crossing2_date = datetime(2019, 3, 28)
 diagram_date = launch_date
 
 # Aphelion and perihelion distances and dates
 # These are obtained directly from JPL Horizons heliocentric positions
 # instead of osculating elements (as those change over time)
-perihelion_date = datetime(2019,8,15)
-perihelion_dist = 0.99   # AU
-aphelion_date = datetime(2018,11,9)
+aphelion_date = datetime(2018, 11, 9)
 aphelion_dist = 1.66   # AU
+perihelion_date = datetime(2019, 8, 15)
+perihelion_dist = 0.99   # AU
 
 # Colors
 Mercury_color = "gray"
@@ -121,7 +121,7 @@ plt.annotate("Perihelion %.2f AU\n%s" % (perihelion_dist, perihelion_date.strfti
 plt.text(1.8, 0, "♈", ha="center", fontsize=14, color="gray")
 plt.annotate("", xy=(1.93, -0.05), xytext=(-30,0), textcoords="offset pixels", arrowprops=dict(arrowstyle="->", connectionstyle="arc3", color="gray"))
 
-s = "JPL Horizons elements (%s)\na=%.3f AU, e=%.3f, i=%.2f°, ω=%.1f°, Ω=%.1f°, M=%.2f°" % (elset_time.strftime("%Y-%B-%d"), Roadster_elems['a']/AU, Roadster_elems['e'], Roadster_elems['i'], Roadster_elems['arg'], Roadster_elems['LAN'], Roadster_elems['M0'])
+s = "JPL Horizons elements (epoch: %s)\na=%.3f AU, e=%.3f, i=%.2f°, ω=%.1f°, Ω=%.1f°, M=%.2f°" % (elset_time.strftime("%Y-%B-%d"), Roadster_elems['a']/AU, Roadster_elems['e'], Roadster_elems['i'], Roadster_elems['arg'], Roadster_elems['LAN'], Roadster_elems['M0'])
 plt.text(0, 1.73, s, ha="center", color="gray", fontsize=10)
 
 # Copyright notice -- remove for Wikipedia use
